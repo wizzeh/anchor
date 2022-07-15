@@ -12,9 +12,10 @@ pub fn generate(f: &Field) -> proc_macro2::TokenStream {
         .then(|| quote! { let __anchor_rent = Rent::get()?; })
         .unwrap_or_else(|| quote! {});
 
-    if !constraints
-        .iter()
-        .any(|c| matches!(c, Constraint::Owner(_)))
+    if matches!(f.ty, Ty::OrphanAccount(_))
+        && !constraints
+            .iter()
+            .any(|c| matches!(c, Constraint::Owner(_)))
     {
         panic!("Orphan accounts must have an owner constraint.")
     }
