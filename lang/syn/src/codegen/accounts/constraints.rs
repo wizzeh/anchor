@@ -241,6 +241,7 @@ pub fn generate_constraint_signer(f: &Field, c: &ConstraintSigner) -> proc_macro
         Ty::AccountInfo => quote! { #ident },
         Ty::ProgramAccount(_) => quote! { #ident.to_account_info() },
         Ty::Account(_) => quote! { #ident.to_account_info() },
+        Ty::OrphanAccount(_) => quote! { #ident.to_account_info() },
         Ty::Loader(_) => quote! { #ident.to_account_info() },
         Ty::AccountLoader(_) => quote! { #ident.to_account_info() },
         Ty::CpiAccount(_) => quote! { #ident.to_account_info() },

@@ -834,6 +834,7 @@ impl<'ty> ConstraintGroupBuilder<'ty> {
     fn add_realloc(&mut self, c: Context<ConstraintRealloc>) -> ParseResult<()> {
         if !matches!(self.f_ty, Some(Ty::Account(_)))
             && !matches!(self.f_ty, Some(Ty::AccountLoader(_)))
+            && !matches!(self.f_ty, Some(Ty::OrphanAccount(_)))
         {
             return Err(ParseError::new(
                 c.span(),
@@ -884,6 +885,7 @@ impl<'ty> ConstraintGroupBuilder<'ty> {
     fn add_close(&mut self, c: Context<ConstraintClose>) -> ParseResult<()> {
         if !matches!(self.f_ty, Some(Ty::ProgramAccount(_)))
             && !matches!(self.f_ty, Some(Ty::Account(_)))
+            && !matches!(self.f_ty, Some(Ty::OrphanAccount(_)))
             && !matches!(self.f_ty, Some(Ty::Loader(_)))
             && !matches!(self.f_ty, Some(Ty::AccountLoader(_)))
         {

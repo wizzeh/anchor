@@ -386,6 +386,9 @@ impl Field {
             Ty::Account(_) => quote! {
                 anchor_lang::accounts::account::Account
             },
+            Ty::OrphanAccount(_) => quote! {
+                anchor_lang::accounts::orphan::OrphanAccount
+            },
             Ty::AccountLoader(_) => quote! {
                 anchor_lang::accounts::account_loader::AccountLoader
             },
@@ -432,6 +435,12 @@ impl Field {
                 }
             }
             Ty::Account(ty) => {
+                let ident = &ty.account_type_path;
+                quote! {
+                    #ident
+                }
+            }
+            Ty::OrphanAccount(ty) => {
                 let ident = &ty.account_type_path;
                 quote! {
                     #ident
@@ -512,6 +521,7 @@ pub enum Ty {
     CpiAccount(CpiAccountTy),
     Sysvar(SysvarTy),
     Account(AccountTy),
+    OrphanAccount(AccountTy),
     Program(ProgramTy),
     Signer,
     SystemAccount,

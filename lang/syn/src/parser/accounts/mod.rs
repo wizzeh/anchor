@@ -240,6 +240,7 @@ fn is_field_primitive(f: &syn::Field) -> ParseResult<bool> {
             | "Loader"
             | "AccountLoader"
             | "Account"
+            | "OrphanAccount"
             | "Program"
             | "Signer"
             | "SystemAccount"
@@ -264,6 +265,7 @@ fn parse_ty(f: &syn::Field) -> ParseResult<Ty> {
         "Loader" => Ty::Loader(parse_program_account_zero_copy(&path)?),
         "AccountLoader" => Ty::AccountLoader(parse_program_account_loader(&path)?),
         "Account" => Ty::Account(parse_account_ty(&path)?),
+        "OrphanAccount" => Ty::OrphanAccount(parse_account_ty(&path)?),
         "Program" => Ty::Program(parse_program_ty(&path)?),
         "Signer" => Ty::Signer,
         "SystemAccount" => Ty::SystemAccount,
