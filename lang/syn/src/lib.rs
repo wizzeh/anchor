@@ -200,6 +200,9 @@ impl AccountField {
         match self {
             AccountField::Field(field) => match &field.ty {
                 Ty::Account(account) => Some(parser::tts_to_string(&account.account_type_path)),
+                Ty::OrphanAccount(account) => {
+                    Some(parser::tts_to_string(&account.account_type_path))
+                }
                 Ty::ProgramAccount(account) => {
                     Some(parser::tts_to_string(&account.account_type_path))
                 }
@@ -258,6 +261,17 @@ impl Field {
                     }
                 }
             }
+            Ty::OrphanAccount(AccountTy { boxed, .. }) => {
+                if *boxed {
+                    quote! {
+                        Box<#container_ty<#account_ty>>
+                    }
+                } else {
+                    quote! {
+                        #container_ty<#account_ty>
+                    }
+                }
+            }
             Ty::Sysvar(ty) => {
                 let account = match ty {
                     SysvarTy::Clock => quote! {Clock},
@@ -306,6 +320,28 @@ impl Field {
                 quote! { UncheckedAccount::try_from(#field.to_account_info()) }
             }
             Ty::Account(AccountTy { boxed, .. }) => {
+                let stream = if checked {
+                    quote! {
+                        #container_ty::try_from(
+                            &#field,
+                        ).map_err(|e| e.with_account_name(#field_str))?
+                    }
+                } else {
+                    quote! {
+                        #container_ty::try_from_unchecked(
+                            &#field,
+                        ).map_err(|e| e.with_account_name(#field_str))?
+                    }
+                };
+                if *boxed {
+                    quote! {
+                        Box::new(#stream)
+                    }
+                } else {
+                    stream
+                }
+            }
+            Ty::OrphanAccount(AccountTy { boxed, .. }) => {
                 let stream = if checked {
                     quote! {
                         #container_ty::try_from(
