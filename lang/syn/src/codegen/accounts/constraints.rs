@@ -12,6 +12,13 @@ pub fn generate(f: &Field) -> proc_macro2::TokenStream {
         .then(|| quote! { let __anchor_rent = Rent::get()?; })
         .unwrap_or_else(|| quote! {});
 
+    if !constraints
+        .iter()
+        .any(|c| matches!(c, Constraint::Owner(_)))
+    {
+        panic!("Orphan accounts must have an owner constraint.")
+    }
+
     let checks: Vec<proc_macro2::TokenStream> = constraints
         .iter()
         .map(|c| generate_constraint(f, c))
