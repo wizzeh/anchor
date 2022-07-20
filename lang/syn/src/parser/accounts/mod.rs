@@ -265,7 +265,7 @@ fn parse_ty(f: &syn::Field) -> ParseResult<Ty> {
         "Loader" => Ty::Loader(parse_program_account_zero_copy(&path)?),
         "AccountLoader" => Ty::AccountLoader(parse_program_account_loader(&path)?),
         "Account" => Ty::Account(parse_account_ty(&path)?),
-        "OrphanAccount" => Ty::OrphanAccount(parse_account_ty(&path)?),
+        "OrphanAccount" => Ty::OrphanAccount(parse_orphan_account_ty(&path)?),
         "Program" => Ty::Program(parse_program_ty(&path)?),
         "Signer" => Ty::Signer,
         "SystemAccount" => Ty::SystemAccount,
@@ -286,6 +286,12 @@ fn ident_string(f: &syn::Field) -> ParseResult<String> {
         .starts_with("Box<Account<")
     {
         return Ok("Account".to_string());
+    }
+    if parser::tts_to_string(&path)
+        .replace(' ', "")
+        .starts_with("Box<OrphanAccount<")
+    {
+        return Ok("OrphanAccount".to_string());
     }
     // TODO: allow segmented paths.
     if path.segments.len() != 1 {
@@ -351,6 +357,17 @@ fn parse_account_ty(path: &syn::Path) -> ParseResult<AccountTy> {
     })
 }
 
+fn parse_orphan_account_ty(path: &syn::Path) -> ParseResult<AccountTy> {
+    let account_type_path = parse_account(path)?;
+    let boxed = parser::tts_to_string(&path)
+        .replace(' ', "")
+        .starts_with("Box<OrphanAccount<");
+    Ok(AccountTy {
+        account_type_path,
+        boxed,
+    })
+}
+
 fn parse_program_ty(path: &syn::Path) -> ParseResult<ProgramTy> {
     let account_type_path = parse_account(path)?;
     Ok(ProgramTy { account_type_path })
@@ -361,6 +378,9 @@ fn parse_account(mut path: &syn::Path) -> ParseResult<syn::TypePath> {
     if parser::tts_to_string(path)
         .replace(' ', "")
         .starts_with("Box<Account<")
+        || parser::tts_to_string(path)
+            .replace(' ', "")
+            .starts_with("Box<OrphanAccount<")
     {
         let segments = &path.segments[0];
         match &segments.arguments {
